@@ -7,3 +7,4 @@ long_description 'Installs/Configures user accounts'
 version          '0.1.0'
 
 depends 'chef-vault'
+depends 'sudo'
