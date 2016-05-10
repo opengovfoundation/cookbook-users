@@ -4,7 +4,7 @@ maintainer_email 'developers@opengovfoundation.org'
 license          'CC0'
 description      'Installs/Configures user accounts'
 long_description 'Installs/Configures user accounts'
-version          '0.1.6'
+version          '0.1.7'
 
 depends 'chef-vault'
 depends 'sudo'
