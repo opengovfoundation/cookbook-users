@@ -35,6 +35,9 @@ group 'staff' do
   action :create
 end
 
+# Keep a list of all ssh keys for our deploy user later.
+deploySshKeys = []
+
 # Loop over our users.
 serverUsers.each do |userName|
   # Get the users' real data from the vault.
@@ -64,6 +67,25 @@ serverUsers.each do |userName|
     owner   userName
     group   'staff'
   end
+
+  # Add our ssh keys to the list for our deploy user.
+  deploySshKeys.concat(fullUser['ssh_keys']);
+end
+
+# Create our deploy user
+user 'deploy' do
+  comment 'Deploy User'
+  shell   '/bin/bash'
+  group   'staff'
+  home    '/home/deploy'
+end
+
+# Give all of our users access to the deploy user.
+file "/home/deploy/.ssh/authorized_keys" do
+  content deploySshKeys.join("\n")
+  mode    '0644'
+  owner   'deploy'
+  group   'staff'
 end
 
 # Create sysadmin group. Add our users to it.
