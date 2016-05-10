@@ -38,10 +38,8 @@ end
 # Keep a list of all ssh keys for our deploy user later.
 deploySshKeys = []
 
-# Loop over our users.
-serverUsers.each do |userName|
-  # Get the users' real data from the vault.
-  fullUser = chef_vault_item('users', userName)
+# Function for creating users and their SSH keys.
+def createUser(userName, fullUser)
 
   # Create the user's account.
   user userName do
@@ -50,6 +48,15 @@ serverUsers.each do |userName|
     shell     fullUser['shell']
     group     'staff'
     home      "/home/#{userName}"
+  end
+
+  # Create the user's home directory if it doesn't exist.
+  # This is necessary on Ubuntu and some other distros.
+  directory "/home/#{userName}" do
+    owner  userName
+    group  'staff'
+    mode   '0755'
+    action :create
   end
 
   # Create the ssh directory.
@@ -67,26 +74,28 @@ serverUsers.each do |userName|
     owner   userName
     group   'staff'
   end
+end
+
+# Loop over our users.
+serverUsers.each do |userName|
+  # Get the users' real data from the vault.
+  fullUser = chef_vault_item('users', userName)
+
+  createUser(userName, fullUser)
 
   # Add our ssh keys to the list for our deploy user.
   deploySshKeys.concat(fullUser['ssh_keys']);
 end
 
-# Create our deploy user
-user 'deploy' do
-  comment 'Deploy User'
-  shell   '/bin/bash'
-  group   'staff'
-  home    '/home/deploy'
-end
+# Create our deploy user.
+deployUser = {
+  'comment'  => 'Deploy User',
+  'password' => nil,
+  'shell'    => '/bin/bash',
+  'ssh_keys' => deploySshKeys
+}
 
-# Give all of our users access to the deploy user.
-file "/home/deploy/.ssh/authorized_keys" do
-  content deploySshKeys.join("\n")
-  mode    '0644'
-  owner   'deploy'
-  group   'staff'
-end
+createUser('deploy', deployUser)
 
 # Create sysadmin group. Add our users to it.
 group 'sysadmin' do
