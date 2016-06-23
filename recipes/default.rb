@@ -43,36 +43,36 @@ def createUser(userName, fullUser)
 
   # Create the user's account.
   user userName do
-    comment   fullUser['comment']
-    password  fullUser['password']
-    shell     fullUser['shell']
-    group     'staff'
-    home      "/home/#{userName}"
+    comment fullUser['comment']
+    password fullUser['password']
+    shell fullUser['shell']
+    group 'staff'
+    home "/home/#{userName}"
   end
 
   # Create the user's home directory if it doesn't exist.
   # This is necessary on Ubuntu and some other distros.
   directory "/home/#{userName}" do
-    owner  userName
-    group  'staff'
-    mode   '0755'
+    owner userName
+    group 'staff'
+    mode '0755'
     action :create
   end
 
   # Create the ssh directory.
   directory "/home/#{userName}/.ssh" do
-    owner  userName
-    group  'staff'
-    mode   '0755'
+    owner userName
+    group 'staff'
+    mode '0755'
     action :create
   end
 
   # Add our public key to the user's authorized keys.
   file "/home/#{userName}/.ssh/authorized_keys" do
     content fullUser['ssh_keys'].join("\n")
-    mode    '0644'
-    owner   userName
-    group   'staff'
+    mode '0644'
+    owner userName
+    group 'staff'
   end
 end
 
@@ -89,9 +89,9 @@ end
 
 # Create our deploy user.
 deployUser = {
-  'comment'  => 'Deploy User',
+  'comment' => 'Deploy User',
   'password' => nil,
-  'shell'    => '/bin/bash',
+  'shell' => '/bin/bash',
   'ssh_keys' => deploySshKeys
 }
 
@@ -99,7 +99,7 @@ createUser('deploy', deployUser)
 
 # Create sysadmin group. Add our users to it.
 group 'sysadmin' do
-  action  :create
+  action :create
   members serverUsers
 end
 
