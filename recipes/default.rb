@@ -78,8 +78,15 @@ end
 
 # Loop over our users.
 server_users.each do |user_name|
-  # Get the users' real data from the vault.
-  full_user = chef_vault_item('users', user_name)
+
+  # Check if the user data is encrypted and load accordingly
+  begin
+    Chef::EncryptedDataBagItem.load_secret
+  rescue
+    full_user = Chef::DataBagItem.load('users', user_name)
+  else
+    full_user = Chef::EncryptedDataBagItem.load('users', user_name)
+  end
 
   create_user(user_name, full_user)
 
